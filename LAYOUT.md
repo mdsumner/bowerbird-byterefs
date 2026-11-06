@@ -1,6 +1,6 @@
 # Layout proposal (not adopted)
 
-Status: proposal for review, 2026-11-06. Nothing is collected yet. The
+Status: proposal for review, 2026-11-06. Nothing is collected yet; collect/collect.py implements option B for trying it out. The
 first dataset to land is `access-esm1-6.historical.ocean-3d-temp-1mon-mean`
 (raad.virtualize `config/access-esm1-6.sh`, corpus source
 `pawsey_ct_esm1_6`). This file replaces the tree in README.md once agreed.
