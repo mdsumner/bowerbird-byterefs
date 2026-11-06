@@ -1,0 +1,47 @@
+{
+  "dataset": "access-esm1-6.historical.ocean-3d-temp-1mon-mean",
+  "build_id": "20261106T082252Z-824c6da",
+  "release_tag": "access-esm1-6.historical.ocean-3d-temp-1mon-mean@20261106T082252Z-824c6da",
+  "product": null,
+  "format_version": "byterefs/0.1",
+  "generator": "https://github.com/mdsumner/raad.virtualize 824c6da",
+  "created": "2026-11-06 08:22:52 UTC",
+  "config": "access-esm1-6.sh",
+  "source_ids": [
+    "pawsey_ct_esm1_6"
+  ],
+  "n_sources": 172,
+  "n_refs": 16512,
+  "n_chunks": 16512,
+  "bytes": 12150232025,
+  "remap": [
+    {
+      "target": "public",
+      "prefix": "/vsicurl/https://",
+      "replacement": "https://"
+    }
+  ],
+  "files": [
+    {
+      "name": "refs_temp.parquet",
+      "size": 231761,
+      "sha256": "c81ceda442400ae66e01e120c4a35a0daa16076e5f4b4e9eb2629af7ae175719"
+    },
+    {
+      "name": "sources.parquet",
+      "size": 7259,
+      "sha256": "4bcf884008c749957a788b653cc2f9e1146fb7729b3c4f35f6ae78e4ea251f50"
+    },
+    {
+      "name": "sources.meta.tsv",
+      "size": 50451,
+      "sha256": "2d627dbba7dfeacde9da40c019585a22b4984551ca37975801be7b4bd604b7f7"
+    },
+    {
+      "name": "plan.vrt",
+      "size": 84044,
+      "sha256": "b59d7e1618c1edd390937e6cc6a23245794bb20247ae3ab92668681be78203f8"
+    }
+  ],
+  "collected": "2026-11-06T08:23:07Z"
+}
