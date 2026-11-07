@@ -1,0 +1,57 @@
+{
+  "dataset": "access-esm1-6.historical.ocean-3d-temp-1mon-mean",
+  "build_id": "20261107T215057Z-a25913e",
+  "release_tag": "access-esm1-6.historical.ocean-3d-temp-1mon-mean@20261107T215057Z-a25913e",
+  "product": null,
+  "format_version": "byterefs/0.1",
+  "generator": "https://github.com/mdsumner/raad.virtualize a25913e",
+  "created": "2026-11-07 21:50:57 UTC",
+  "config": "access-esm1-6.sh source-coop.sh",
+  "source_ids": [
+    "pawsey_ct_esm1_6"
+  ],
+  "n_sources": 174,
+  "n_refs": 16514,
+  "n_chunks": 16514,
+  "bytes": 12150308121,
+  "remap": [
+    {
+      "target": "public",
+      "prefix": "/vsicurl/https://",
+      "replacement": "https://"
+    }
+  ],
+  "files": [
+    {
+      "name": "refs_geolat_t.parquet",
+      "size": 3105,
+      "sha256": "1a84c55db274bfa6043e0e0adb84540d831ab161f8876f6d69fcd13763ddf479"
+    },
+    {
+      "name": "refs_geolon_t.parquet",
+      "size": 3105,
+      "sha256": "b5a726c8e913471fc158b5ac5409afedb143bad56b9c3558276ed07dd668ff31"
+    },
+    {
+      "name": "refs_temp.parquet",
+      "size": 231761,
+      "sha256": "c81ceda442400ae66e01e120c4a35a0daa16076e5f4b4e9eb2629af7ae175719"
+    },
+    {
+      "name": "sources.parquet",
+      "size": 7306,
+      "sha256": "f62ec3a1a7b4ca3c437e3f5e7543a6d55c193f91377c97ed6d3dfc0a1e012d60"
+    },
+    {
+      "name": "sources.meta.tsv",
+      "size": 50999,
+      "sha256": "53dfd66f5f3d6e694a8b012cea37e65cccda742cf8a8da1cf804472223b61f8a"
+    },
+    {
+      "name": "plan.vrt",
+      "size": 86276,
+      "sha256": "d19bdaca45fc2886c0ecde31470b1b5c8940707a7bbf6614855d53a71888fcde"
+    }
+  ],
+  "collected": "2026-11-07T22:26:59Z"
+}
