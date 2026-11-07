@@ -78,7 +78,16 @@ Release `<dataset>@<build_id>`: `refs_<array>.parquet`, `sources.parquet`,
 
 ```
 python collect/collect.py <raad.virtualize work dir> [--product <id>]
+python collect/collect.py <published dataset URL> [--product <id>]
 ```
+
+Or from GitHub: Actions > Collect > Run workflow, with the published
+dataset URL (e.g.
+`https://data.source.coop/ausantarctic/ausantarctic-scratch/access-esm/<dataset>`).
+The workflow fetches the published files, creates the release and opens a
+pull request with the git record; nothing runs on HPC. Collecting from the
+URL records what readers can reach, and `build.json` names it in
+`collected_from`.
 
 Reads `<work>/out/flat/` and `<work>/{plan.vrt,sources.meta.tsv}`, checks
 the generator is clean, writes `<dataset>/<build_id>/`, appends the index
