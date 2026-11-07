@@ -1,0 +1,71 @@
+# Collect one published raad.virtualize build: fetch its flat refs store,
+# plan.vrt and sources.meta.tsv from the public URL, create the release
+# <dataset>@<build_id>, and open a pull request with the git record
+# (arrays.json, build.json, index, current.json). Merge the PR to adopt it.
+name: Collect
+
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: "Published dataset URL, e.g. https://data.source.coop/ausantarctic/ausantarctic-scratch/access-esm/<dataset>"
+        required: true
+      product:
+        description: "Product id for stores.parquet (empty until a product exists)"
+        required: false
+        default: ""
+      not_current:
+        description: "Record the build without making it the current one"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: collect
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pyarrow
+      - name: Collect
+        id: collect
+        env:
+          GH_TOKEN: ${{ github.token }}
+          URL: ${{ inputs.url }}
+          PRODUCT: ${{ inputs.product }}
+          NOT_CURRENT: ${{ inputs.not_current }}
+        run: |
+          set -euo pipefail
+          args=(--upload gh)
+          [ -n "$PRODUCT" ] && args+=(--product "$PRODUCT")
+          [ "$NOT_CURRENT" = true ] && args+=(--not-current)
+          python collect/collect.py "$URL" "${args[@]}" | tee collect.log
+          tag=$(sed -n 's/^collect: release \(.*\) created$/\1/p' collect.log)
+          [ -n "$tag" ] || { echo "no release created"; exit 1; }
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+      - name: Pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.collect.outputs.tag }}
+          URL: ${{ inputs.url }}
+        run: |
+          set -euo pipefail
+          branch="collect/${TAG//@/-}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$branch"
+          git add -A -- . ':!collect.log' ':!release'
+          git commit -m "collect $TAG" -m "From $URL."
+          git push -u origin "$branch"
+          gh pr create --base main --head "$branch" --title "collect $TAG" \
+            --body "Collected from $URL by the Collect workflow (run ${{ github.run_id }}). Release: https://github.com/${{ github.repository }}/releases/tag/${TAG//@/%40}"

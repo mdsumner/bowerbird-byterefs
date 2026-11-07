@@ -17,6 +17,12 @@ The input is a raad.virtualize work directory after the render step:
 py/corpus.py --meta; a build without one cannot be stale-checked and is
 refused).
 
+Or the input is the public URL of a published dataset (run.sh publish
+writes flat/, plan.vrt and sources.meta.tsv beside the other forms), e.g.
+https://data.source.coop/ausantarctic/ausantarctic-scratch/access-esm/<dataset>:
+the files are fetched and collected as published, so the record holds only
+what readers can reach. This is how the Collect workflow runs.
+
   build_id   <created, UTC, %Y%m%dT%H%M%SZ>-<generator commit, 7 hex>,
              from arrays.json meta.created and meta.generator; a "-dirty"
              or unversioned generator is refused
@@ -33,6 +39,7 @@ Git is not touched: review, commit and push the changes afterwards.
 
 Usage:
   python collect/collect.py /path/to/raad.virtualize/work/<dataset>
+  python collect/collect.py https://data.source.coop/<account>/<product>/<prefix>/<dataset>
 """
 import argparse
 import datetime as dt
@@ -43,6 +50,9 @@ import re
 import shutil
 import subprocess
 import sys
+import tempfile
+import urllib.error
+import urllib.request
 
 import pyarrow as pa
 import pyarrow.csv as pacsv
@@ -115,6 +125,31 @@ def append(path, schema, new, replace):
     return len(rows)
 
 
+def fetch(url, path):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    try:
+        with urllib.request.urlopen(url, timeout=120) as r, open(path, "wb") as f:
+            shutil.copyfileobj(r, f)
+    except urllib.error.HTTPError as e:
+        die(f"cannot fetch {url}: HTTP {e.code}")
+
+
+def fetch_published(base, tmp):
+    """A work directory in tmp holding the published files of the dataset at base."""
+    base = base.rstrip("/")
+    flat = os.path.join(tmp, "out", "flat")
+    fetch(f"{base}/flat/arrays.json", os.path.join(flat, "arrays.json"))
+    doc = json.load(open(os.path.join(flat, "arrays.json")))
+    names = [f"refs_{x['array']}.parquet" for x in doc.get("arrays", [])
+             if x.get("storage") == "referenced"]
+    for f in names + ["sources.parquet"]:
+        fetch(f"{base}/flat/{f}", os.path.join(flat, f))
+    for f in ("plan.vrt", "sources.meta.tsv"):
+        fetch(f"{base}/{f}", os.path.join(tmp, f))
+    print(f"collect: fetched {len(names) + 4} files from {base}")
+    return tmp
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("work")
@@ -124,6 +159,11 @@ def main():
                     default="gh" if shutil.which("gh") else "none")
     ap.add_argument("--not-current", action="store_true")
     a = ap.parse_args()
+    origin = a.work
+    if re.match(r"^https?://", a.work):
+        a.work = fetch_published(a.work, tempfile.mkdtemp(prefix="collect-"))
+    else:
+        origin = os.path.abspath(a.work)
 
     flat = os.path.join(a.work, "out", "flat")
     aj = os.path.join(flat, "arrays.json")
@@ -172,6 +212,7 @@ def main():
         "config": meta.get("config"), "source_ids": source_ids,
         "n_sources": n_sources, "n_refs": n_refs, "n_chunks": n_chunks, "bytes": nbytes,
         "remap": doc.get("remap", []), "files": files, "collected": now,
+        "collected_from": origin,
     }
     with open(os.path.join(bdir, "build.json"), "w") as f:
         json.dump(build, f, indent=2)
