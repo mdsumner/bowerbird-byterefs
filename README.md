@@ -64,3 +64,15 @@ flagged in `stores.parquet`; rebuilding it is the product repo's job.
 
 Background: the production handover map (per-product repos, scratch vs
 production nesting) in the project files, `production/per-product-repo-map.md`.
+
+## Icechunk and kerchunk from a collected build
+
+A collected build is a byterefs/0.1 table; to get an Icechunk repository
+from it, run raad.virtualize `py/render_icechunk.py` on the build directory
+(arrays.json beside refs_<array>.parquet). For Icechunk ingestion straight
+from files, see Earthmover's [icechunk-datacube-ingestion agent
+skill](https://github.com/earth-mover/agent-skills/tree/main/icechunk-datacube-ingestion);
+its batching, manifest-splitting and memory advice applies to our renders
+too. Its advice that kerchunk is deprecated does not apply here: raad.virtualize
+keeps publishing kerchunk alongside the table, because GDAL and other
+non-Python readers need it.
