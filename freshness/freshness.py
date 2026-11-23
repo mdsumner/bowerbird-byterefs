@@ -14,8 +14,9 @@ Per dataset:
               where the group's datasets.json states another end (a store
               republished without its group catalog)
   sources     number of source files the store references
-              (flat/sources.parquet), and the corpus source they are listed
-              in (found by URL, after the store's own "public" remap rules)
+              (flat/sources.parquet), and the corpus sources they are listed
+              in (found by URL, after the store's own "public" remap rules;
+              corpus_source is the one listing most of them)
   stale       referenced files the corpus lists with a different size, or
               ETag where both sides have one (changed), and files under
               the URL prefix the corpus source covers that it no longer
@@ -169,7 +170,8 @@ def dataset_report(base, ds, corpus, by_source):
     urls = {norm(public(s["source"], rules)): s for s in srcs}
     sids = collections.Counter(corpus[u][0] for u in urls if u in corpus)
     rep["sources"] = {"n": len(urls), "listed": sum(sids.values()),
-                      "corpus_source": sids.most_common(1)[0][0] if sids else None}
+                      "corpus_source": sids.most_common(1)[0][0] if sids else None,
+                      "corpus_sources": sorted(sids)}
     # the URL prefix each corpus source covers, cut back to a directory
     covers = [os.path.commonprefix(by_source[sid]).rsplit("/", 1)[0] + "/" for sid in sids]
     changed, removed, unlisted = [], [], 0
@@ -190,9 +192,10 @@ def dataset_report(base, ds, corpus, by_source):
                     "examples": sorted(changed)[:5] + sorted(removed)[:5]} if sids else None
     have = [d for d in map(name_date, urls) if d]
     if sids and have:
-        sid = rep["sources"]["corpus_source"]
+        # every source the store reads: Bluelink reads BRAN2020 before 2010
+        # and BRAN2023 from 2010, and new months arrive in the second
         shapes, last = {shape(u) for u in urls}, max(have)
-        new = [d for u in by_source[sid] if u not in urls and shape(u) in shapes
+        new = [d for sid in sids for u in by_source[sid] if u not in urls and shape(u) in shapes
                for d in [name_date(u)] if d and d > last]
         rep["upstream"] = {"indexed_to": last, "newer": len(new), "newest_date": max(new) if new else last}
     else:
