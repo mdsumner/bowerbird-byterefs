@@ -53,13 +53,34 @@ with the corpus `current__<source_id>.parquet` (raad.virtualize
 `py/stale.py`: `removed` or `changed` by etag, then size). A stale store is
 flagged in `stores.parquet`; rebuilding it is the product repo's job.
 
+## Freshness
+
+`freshness/freshness.py` (workflow `Freshness`, Monday 06:00 UTC, after the
+corpus run) compares every published store under the roots in
+`freshness/roots.txt` with the corpus as it stands, and replaces
+`freshness.json` on the release `freshness`. Per dataset it reports the
+published store's interval end, build time and generator. It also reports
+whether the store has a build record and the corpus source its files are
+listed in. Under stale it counts referenced files the corpus lists with
+another size or ETag, or no longer lists. Under upstream it gives the
+number and the latest name date of files of the same name pattern newer
+than the store's last. It reads only public URLs and needs no GDAL. Stores
+without a build record are compared through their `flat/sources.parquet`
+(size, mtime, ETag), after their own `public` remap rules.
+
+Computed values only: the declared facts (update model, upstream cadence,
+who holds the bytes) are in raad.virtualize `products/*/datasets.tsv`, and
+build parameters (corpus source, hold-back) in its dataset configs.
+raad.virtualize's Pages build fetches the asset for its Datasets page.
+
 ## Open
 
 - Parquet fragments plus a manifest, or Lance, for the versioned table
   (asked of Dewey Dunnington).
 - Whether products keep their own copy of `flat/` and `store.sqlite` or
   point at this one.
-- No published store has a `sources.meta.tsv` yet: each dataset needs one
+- Few published stores have a `sources.meta.tsv` (on 2026-11-23: AMSR2,
+  ACCESS-ESM1.6 and the two MEOP stores); every other dataset needs one
   rebuild on the corpus before it can be collected.
 
 Background: the production handover map (per-product repos, scratch vs

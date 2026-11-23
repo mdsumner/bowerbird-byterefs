@@ -1,0 +1,40 @@
+# Weekly: how far each published store is behind its sources
+# (freshness/freshness.py), after the aad-filelist corpus run (Monday 02:00
+# UTC). The result is the asset freshness.json of the release `freshness`,
+# replaced on every run; raad.virtualize's Pages build fetches it for the
+# Datasets page. Nothing is committed.
+name: Freshness
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"   # Monday 06:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: freshness
+  cancel-in-progress: false
+
+jobs:
+  freshness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pyarrow
+      - name: Compute
+        run: python freshness/freshness.py --out freshness.json
+      - name: Publish to the freshness release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh release view freshness >/dev/null 2>&1 ||
+            gh release create freshness --title "Freshness of the published stores" \
+              --notes "freshness.json, replaced weekly by the Freshness workflow (freshness/freshness.py)."
+          gh release upload freshness freshness.json --clobber
