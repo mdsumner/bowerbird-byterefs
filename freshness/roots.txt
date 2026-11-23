@@ -1,0 +1,9 @@
+# Index roots watched by freshness.py: one per line, the public URL of a
+# directory that holds datasets.json and product.json (a production
+# product's virtual/, or a scratch group). A scratch product root is given
+# with a trailing groups.tsv: each group listed there is a root. Lines
+# starting with # are skipped.
+https://data.source.coop/ausantarctic/ausantarctic-scratch/groups.tsv
+https://data.source.coop/ausantarctic/ibcso/virtual
+https://data.source.coop/ausantarctic/bedmap/virtual
+https://data.source.coop/ausantarctic/gebco/virtual
